@@ -11,14 +11,15 @@ ui.extend({
       method:obj.method || "POST",
       data: obj.params,
       header: {
-        "token": state.token || "",
+        "token": ui.getApp().globalData.token || "",
         "content-type" : obj.contentType || "application/json"
       },
       success: (res) => {
         obj.scb(res)
-        if(res.data.code == 401){//token失效....
+        if(res.data.code == 401 || res.data.code == 203 ){//token失效....
+          debugger;
           ui.navigateTo({
-            url: '/pages/login'
+            url:`/pages/login`
           })
         }
       },

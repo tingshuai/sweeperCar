@@ -1,20 +1,43 @@
 <template>
   <ui-page class="map-wrap" top="0">
-
-    <ui-view id="ui-app">
-      <ui-slide-menu width="280" threshold="30" ui:model="showSlideMenu">
-
-        <ui-view slot="menu" class="menu">
-          <!-- 侧滑菜单内容 -->
-        </ui-view>
-
-        <ui-view slot="panel">
+    <ui-view class="{{getViewClasses}}" top="0" left="0" bottom="0">
+      <ui-view class="formItem">
+          <ui-input placeholder="区域--"></ui-input>
+          <ui-icon type="ring" size="32" color="#09BB07"></ui-icon>
+      </ui-view>
+      <ui-view class="formTextBtn">
+          <ui-text>添加区域</ui-text>
+      </ui-view>
+      <ui-view class="formItem">
+          <ui-text type="ring" size="32">区域编码</ui-text>
+          <ui-input placeholder=""></ui-input>
+          <ui-text type="ring" size="32">区域名称</ui-text>
+          <ui-input placeholder=""></ui-input>          
+      </ui-view>
+      <ui-view class="formTextBtn">
+          <ui-text>取消</ui-text>
+          <ui-text>完成</ui-text>
+      </ui-view>      
+      <ui-view class="formItem">
+          <ui-input placeholder="未清扫天数"></ui-input>
+          <ui-icon type="ring" size="32" color="#09BB07"></ui-icon>
+      </ui-view>
+      <ui-view class="formItem">
+        <ui-checkbox-group checkboxChange="boxChange">
+          <ui-label class="checkbox" ui:for="{{items}}">
+            <ui-checkbox value="{{item.name}}" checked="{{ item.checked }}" ></ui-checkbox>{{item.value}}
+          </ui-label>
+        </ui-checkbox-group>
+      </ui-view>          
+    </ui-view>
+    <ui-view id="ui-app" bindtap="tapWindow">
           <ui-map 
             id="map" 
             map-service="tencent"
             longitude="{{longitude}}" 
             latitude="{{latitude}}"
             scale="{{scale}}"
+            include-points="{{ markers }}"
             show-location="{{showLocation}}"
             markers="{{markers}}"
             controls="{{controls}}"
@@ -36,16 +59,47 @@
           </ui-view>
           <ui-view class="charts">
             <ui-view id="c_left">
-              sdfsf
+              <ui-bar
+                    value="{{bar2.data}}"
+                    height="{{ height*0.2 }}"
+                    width="{{width/2}}"
+                    is-animated="true"
+                    tooltip="true"
+                    has-percentage="false"
+                    between-bars-padding = 0.3
+                    percentage-label-margin="{{1}}"
+                    color-schema="{{bar2.colorSchema}}"
+                    y-axis-padding-between-chart="{{12}}"
+                    >
+              </ui-bar>
             </ui-view>
             <ui-view id="c_right" ref="c_right">
-              sdfsdfsf
+              <ui-view style="text-align: center">
+                <ui-donut
+                    value="{{donut.data}}"
+                    width="{{ width/2 }}"
+                    height="{{ height*0.2 }}"
+                    external-radius="50"
+                    internal-radius="30"
+                    is-animated="true"
+                    radius-hover-offset="0"
+                    color-schema="{{donut.colorSchema}}"
+                    highlight-slice-by-id="{{2}}">
+                </ui-donut>
+                <!-- <ui-legend
+                    value="{{legendData.legend}}"
+                    width="{{width/2}}"
+                    height="50"
+                    is-horizontal="{{true}}"
+                    is-animated="{{true}}"
+                    text-size="{{legendData.textSize}}"
+                    text-letter-spacing ="0.5"
+                    color-schema="{{legendData.colorSchema}}">
+                </ui-legend>                 -->
+            </ui-view>
             </ui-view>
           </ui-view>
-          <!-- 页面主体部分 -->
-        </ui-view>
-      </ui-slide-menu>
-    </ui-view>    
+    </ui-view>
   </ui-page>
 </template>
 
@@ -53,6 +107,7 @@
 // mapDemo.js
 // mapDemo02.js
 var pathIcon = require('#/images/map/path.png')
+let app = ui.getApp().globalData;
 export default {
   config: {
     "navigationBarTitleText": "自定义标点和气泡",
@@ -60,99 +115,45 @@ export default {
   },
   data () {
     return {
-      "showSlideMenu":false,
+      "showSlideMenu":true,
+      latitude: 39.855060,
+      longitude: 116.368650,
+      scale: 5,
+      showLocation: true,
+      mapCtx: null,
+      height: ui.WIN_HEIGHT,
+      width: ui.WIN_WIDTH,
+      isExpand:true,
+      items: [
+        { name: 'USA', value: '美国' },
+        { name: 'CHN', value: '中国', checked: true },
+        { name: 'BRA', value: '巴西', checked: true }
+      ],  
+      donut: {
+        data: [],
+        colorSchema: ['#679DFF', '#FFA067'],
+        internalRadius:0
+      },
+      legendData: {
+        legend: [
+          {
+            id: 1,
+            name: '正常电压'
+          },
+          {
+            id: 2,
+            name: '低电压'
+          }
+        ],
+        textSize: 14,
+        colorSchema: ['#679DFF', '#FFA067']
+      },
       latitude: 39.855060,
       longitude: 116.368650,
       scale: 16,
       showLocation: true,
       mapCtx: null,
-      markers: [
-        {
-        id: 1,
-        latitude: 39.855060,
-        longitude: 116.368650,
-        iconPath: require('#/images/map/posi.png'),
-        label: {
-          fontSize: 12,
-          color: '#FF0000',
-          content: '',
-          x: 0.5,
-          y: 0.5
-        },
-        callout: {
-          content: `<div class="c-wrap">
-                    <div class="info">
-                      <p class="a-name">北京引领视觉科技有限公司</p>
-                      <p class="a-info">丰台区南三环搜宝商务中心3号楼1205</p>
-                    </div>
-                    <div class="click">导航</div>
-                   </div>
-                  `,
-          color: '#000000',
-          fontSize: 16,
-          bgColor: '#ffffff',
-          borderRadius: 10,
-          display: 'ALWAYS',
-          padding: 6
-          // boxShadow: '0 0 1px 1px rgba(0,0,0,.2)'
-        },
-        width: 30,
-        height: 40
-      }, {
-        id: 2,
-        latitude: 39.851297,
-        longitude: 116.368175,
-        iconPath: require('#/images/map/qcsc_ic_location_pin.png'),
-        label: {
-          fontSize: 12,
-          color: '#FF0000',
-          content: '',
-          x: 0.5,
-          y: 0.5
-        },
-        callout: {
-          content: `在这里上车`,
-          color: '#000000',
-          fontSize: 16,
-          bgColor: '#ffffff',
-          borderRadius: 14,
-          display: 'ALWAYS',
-          padding: 8,
-          boxShadow: '0 0 4px 1px rgba(0,0,0,.1)'
-        },
-        width: 22,
-        height: 54
-      }, {
-        id: 3,
-        latitude: 39.858620,
-        longitude: 116.369580,
-        iconPath: require('#/images/map/trip_hotelreuse_map_poi_around_info_stations_selected.png'),
-        label: {
-          content: '点击查看详情',
-          fontSize: 12,
-          color: '#FF0000',
-          x: 100,
-          y: 100
-        },
-        callout: {
-          content: `<div class="s-map">
-                      <p class="s-name clearfix">右安门翠林小区二里</p>
-                      <div class="btn">
-                        <img src="${pathIcon}"/>
-                        <span>导航</span>
-                      </div>
-                    </div>`,
-          color: '#000000',
-          fontSize: 16,
-          bgColor: '#ffffff',
-          borderRadius: 5,
-          display: 'BYCLICK',
-          padding: 8,
-          boxShadow: '0 0 4px 1px rgba(0,0,0,.1)'
-        },
-        width: 32,
-        height: 45
-      }],
+      markers: [],
       controls: [{
         id: 1,
         iconPath: require('#/images/map/location.png'),
@@ -182,8 +183,11 @@ export default {
         fillColor: '#0000FF33',
         radius: 100,
         strokeWidth: 1
-
-      }]
+      }],
+      bar2:{
+        colorSchema: ['#679DFF', '#FFA067'],
+        data: []
+      }       
     }
   },
   created () {
@@ -193,9 +197,44 @@ export default {
     // })
   },
   mounted () {
+    let that = this;
     this.mapCtx = ui.createMapContext('map')
+    ui.getStorage({
+      key:"userMsg",
+      success(res){
+        app.token = res.data.token;
+        app.userMsg = res.data;
+        that.getPosition();
+        that.getChartData({//请求异常图.
+          type:"normal"
+        })
+        that.getChartData({//请求电压图
+          type:"voltage"
+        })
+      },
+      fail(res){
+        ui.navigateTo({
+          url:'/pages/login'
+        })
+      }
+    })
+  },
+  watch:{
+
+  },
+  computed:{
+    getViewClasses (n) {
+      let classes = ['menu']
+      classes.push(this.isExpand ? 'expand' : '')
+      debugger;
+      return classes
+    }
   },
   methods: {
+    tapWindow(e){
+      this.isExpand = !this.isExpand;
+      console.log( this.isExpand )
+    },
     controltap (e) {
       if (e.controlId === 1) {
         this.mapCtx.moveToLocation()
@@ -227,7 +266,74 @@ export default {
       })
     },
     go () {
-    }
+    },
+		getPosition(){//获取清扫机位置
+			let that = this;
+			this.http({
+				url:'cars/macPosition',
+				method:"GET",
+				scb(res){
+					if( res.data.code == 200 ){
+            let _marker = [];
+            res.data.data.forEach((val,i,arr) => {
+              _marker.push({
+                id:i,
+                longitude:val.longitude,
+                latitude:val.latitude
+              })
+            });
+            that.longitude = _marker[0].longitude;
+            that.latitude = _marker[0].latitude;
+            that.markers = _marker;
+            return;
+					}
+				},
+				fcb(res){
+					console.log( "errmmm", res)
+				}
+			})
+		},
+		getChartData(obj){//获取设备状态数量
+			let that = this;
+			this.http({
+				url:'cars/getVoltageStatic',
+				method:"GET",
+				params:{
+					areaNo:"",
+					type:obj.type
+				},
+				scb(res){
+					if( res.data.code == 200 ){
+            if( obj.type == "voltage" ){//电压图
+              let _data = [{
+                            quantity: res.data.data.lowVoltage,
+                            name: '低电压',
+                            id: 1
+                          },{
+                            quantity: res.data.data.total - res.data.data.lowVoltage,
+                            name: '正常',
+                            id: 2
+                          }]
+              that.donut.data = _data;
+            }else{//异常图
+              let _data = [{
+                value:res.data.data.errors,
+                name:"异常设备",
+              },{
+                value:res.data.data.total - res.data.data.errors,
+                name:"正常设备",
+              }]
+              that.bar2.data = _data;
+            }
+          };
+          return;
+				},
+				fcb(res){
+          console.log( "errmmm", res)
+          return
+				}
+			})				
+		}
   }
 }
 
@@ -235,6 +341,19 @@ export default {
 
 <style lang="less">
   // mapDemo.less
+  .menu{
+    background-color: white;
+    height: 100%;
+    z-index: 10000;
+    position: fixed;
+    width: 0;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  .expand{
+    width: 48vw;
+    background-color: white;
+  }
 .c-wrap {
   display: flex;
   justify-content: space-between;
@@ -311,7 +430,7 @@ export default {
 	height: 7vh;
 	background-color: white;
 	align-items: center;
-	z-index: 1000;
+	z-index: 80;
 	position: absolute;
 	width: 100%;
 }

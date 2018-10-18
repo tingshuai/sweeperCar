@@ -3,7 +3,8 @@ export default {
   config: {
     "pages": [
       "pages/index",
-      "pages/detail"
+      "pages/detail",
+      "pages/login"
     ],
     "theme": {
       "theme-color": "#3399ff"
@@ -15,12 +16,14 @@ export default {
       "showScroller":true
     },
     "tabBar": false,
-    "networkBaseUrl":"http://192.168.1.80:8004"
+    "networkBaseUrl":"http://192.168.1.80:8004/"
   },
   data () {
     return {
       //全局变量
       globalData: {
+        token:"",
+        userMsg:{}
       },
       WIN_WIDTH:ui.WIN_WIDTH,
       tabIndex: 0,
@@ -178,8 +181,10 @@ export default {
         }
       }
       return {}
-    }
+    },
+    boxChange(e){
 
+    }
   },
   mounted () {
 
@@ -190,9 +195,8 @@ export default {
 <template>
   <ui-view id="ui-app">
     <ui-slide-menu width="280" threshold="30" touch="{{ pageConfig.touchSlideMenu }}" ui:model="showSlideMenu">
-
     <ui-view slot="menu" class="menu">
-      <ui-text block style="color:#fff;margin:10px">侧滑菜单</ui-text>
+  
     </ui-view>
 
     <ui-view slot="panel">
