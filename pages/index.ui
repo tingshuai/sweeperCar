@@ -2,37 +2,49 @@
   <ui-page class="map-wrap" top="0">
     <ui-view class="{{getViewClasses}}" top="0" left="0" bottom="0">
       <ui-view class="formItem">
-          <ui-input placeholder="区域--"></ui-input>
+          <ui-input placeholder="区域--" ui:model="{{ viData.areaName }}"></ui-input>
           <ui-icon type="ring" size="32" color="#09BB07"></ui-icon>
+          <ui-view>
+              <ui-view data-item="{{JSON.stringify({areaNo:'',areaName:'全部'}) }}" bindtap="selArea">全部</ui-view>
+              <ui-view ui:for="{{ slideData }}" data-item="{{JSON.stringify(item) }}" bindtap="selArea">{{ item.areaName }}</ui-view>
+          </ui-view>
       </ui-view>
       <ui-view class="formTextBtn">
-          <ui-text>添加区域</ui-text>
+          <ui-text bindtap="isAddArea">添加区域</ui-text>
       </ui-view>
-      <ui-view class="formItem">
+      <ui-view class="formItem" ui:show="{{ showArea }}">
           <ui-text type="ring" size="32">区域编码</ui-text>
-          <ui-input placeholder=""></ui-input>
+          <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
           <ui-text type="ring" size="32">区域名称</ui-text>
-          <ui-input placeholder=""></ui-input>          
+          <ui-input placeholder="" ui:model="{{ areaData.areaName }}"></ui-input>          
       </ui-view>
       <ui-view class="formTextBtn">
-          <ui-text>取消</ui-text>
-          <ui-text>完成</ui-text>
+          <ui-text bindtap="isAddArea" ui:if="{{ showArea }}">取消</ui-text>
+          <ui-text ui:else style="color:gray;">取消</ui-text>
+          <ui-text bindtap="addArea">完成</ui-text>
       </ui-view>      
       <ui-view class="formItem">
-          <ui-input placeholder="未清扫天数"></ui-input>
+          <ui-input placeholder="未清扫天数" ui:model="{{ viData.selDay }}"></ui-input>
           <ui-icon type="ring" size="32" color="#09BB07"></ui-icon>
+          <ui-view>
+              <ui-view ui:for="{{ days }}" data-item="{{ JSON.stringify( item ) }}" bindtap="selDay">{{ item.name }}</ui-view>
+          </ui-view>          
       </ui-view>
       <ui-view class="formItem">
-        <ui-checkbox-group checkboxChange="boxChange">
+        <ui-checkbox-group bindchange="boxChange">
           <ui-label class="checkbox" ui:for="{{items}}">
-            <ui-checkbox value="{{item.name}}" checked="{{ item.checked }}" ></ui-checkbox>{{item.value}}
+            <ui-checkbox value="{{ item.value }}" checked="{{ item.checked }}" ></ui-checkbox>{{ item.name }}
           </ui-label>
         </ui-checkbox-group>
-      </ui-view>          
+      </ui-view>
+      <ui-button type="primary" bindtap="beginSweep">清扫</ui-button>       
     </ui-view>
-    <ui-view id="ui-app" bindtap="tapWindow">
+    <!-- 功能按钮组 -->
+    <ui-image src="/static/img/group.png" mode="aspectFit" class="qf_control" bindtap="toggleSlide"></ui-image>
+    <ui-image src="/static/img/plus.png" mode="aspectFit" class="qf_plus"></ui-image>
+    <ui-view id="ui-app">
           <ui-map 
-            id="map" 
+            id="map"
             map-service="tencent"
             longitude="{{longitude}}" 
             latitude="{{latitude}}"
@@ -44,11 +56,12 @@
             bindcontroltap="controltap"
             bindregionchange="regionchange"
             bindcallouttap="callouttap"
+            bindmarkertap="getMcatDetail"
             style="width:100%;height:100vh;">
           </ui-map>
           <ui-view class="header">
             <ui-view class="h_left">
-              sdf
+              sdf{{ mCatDetail.macNo}}
             </ui-view>
             <ui-view class="h_center">
               标题
@@ -57,7 +70,7 @@
               <ui-text>退出</ui-text>
             </ui-view>
           </ui-view>
-          <ui-view class="charts">
+          <ui-view class="charts" ui:show="{{ !isPoint }}">
             <ui-view id="c_left">
               <ui-bar
                     value="{{bar2.data}}"
@@ -95,10 +108,109 @@
                     text-size="{{legendData.textSize}}"
                     text-letter-spacing ="0.5"
                     color-schema="{{legendData.colorSchema}}">
-                </ui-legend>                 -->
+                </ui-legend>-->
             </ui-view>
             </ui-view>
           </ui-view>
+          <ui-view class="sweepCatDetail" ui:show="{{ isPoint }}">
+            <ui-view class="detailList">
+              <ui-row height="40">
+                <ui-col align="left" vertical-align="middle"><ui-text>机联网编码:{{ mCatDetail.macNo || '' }}</ui-text></ui-col>
+                <ui-col align="right" vertical-align="middle"><ui-button>远程请扫</ui-button></ui-col>
+              </ui-row>            
+              <ui-row height="40">
+                <ui-col align="right" vertical-align="middle">电机电压:{{ mCatDetail.motorVoltage  || '' }}</ui-col>
+                <ui-col align="right" vertical-align="middle">续航里程:{{ mCatDetail.cruisingRadius  || '' }}</ui-col>
+              </ui-row>
+              <ui-row height="40">
+                <ui-col align="right" vertical-align="middle">上次清扫压降（V）:{{ mCatDetail.lastCleanVoltageDrop   || '' }}</ui-col>
+                <ui-col align="right" vertical-align="middle">电池使用时间:{{ mCatDetail.batteryUseTime || '' }}</ui-col>
+              </ui-row>
+              <ui-row height="40">
+                <ui-col align="right" vertical-align="middle">运行状态:{{ mCatDetail.runState || '' }}</ui-col>
+                <ui-col align="right" vertical-align="middle">故障状态:{{ mCatDetail.errorState || '' }}</ui-col>
+              </ui-row>        
+              <ui-row height="40">
+                <ui-col align="right" vertical-align="middle">历史清扫次数:{{ mCatDetail.hisTimes || '' }}</ui-col>
+                <ui-col align="right" vertical-align="middle">当天清扫次数:{{ mCatDetail.todayTimes || '' }}</ui-col>
+              </ui-row>    
+              <ui-row height="40">
+                <ui-col align="right" vertical-align="middle">电池状态:{{ mCatDetail.batteryState || '' }}</ui-col>
+                <ui-col align="right" vertical-align="middle">主电板电压:{{ mCatDetail.mainVoltage || '' }}</ui-col>
+              </ui-row>   
+              <ui-row height="40">
+                <ui-col align="right" vertical-align="middle">上次清扫时间:{{ mCatDetail.lastCleanTime || '' }}</ui-col>
+                <ui-col align="right" vertical-align="middle">上次清扫平均电流:{{ mCatDetail.lastCleanCurrent || '' }}</ui-col>
+              </ui-row>       
+              <ui-row height="40">
+                <ui-col align="right" vertical-align="middle">上次清扫用时:{{ mCatDetail.lastUseTime || '' }}</ui-col>
+                <ui-col align="right" vertical-align="middle"></ui-col>
+              </ui-row>                                                                      
+            </ui-view>
+            <ui-view class="cha">
+              <ui-image src="/static/img/cha.png" mode="aspectFit" bindtap="togglePoint"></ui-image>
+            </ui-view>
+          </ui-view>
+    </ui-view>
+    <ui-view class="qf_model" ui:show="{{ isExpand }}" bindtap="toggleSlide"></ui-view><!--模态框-->
+    <ui-view class="addCarModel">
+        <ui-view class="addCar">
+           <ui-row height="40">
+             <ui-col align="right" vertical-align="middle"><ui-text>远程请扫</ui-text></ui-col>
+           </ui-row>
+           <ui-row height="40">
+             <ui-col span="3" align="right" vertical-align="middle"><ui-text>机联网编码</ui-text></ui-col>
+             <ui-col span="7" align="right" vertical-align="middle">
+               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
+             </ui-col>
+             <ui-col sapn="2" align="right" vertical-align="middle">
+              <ui-image src="/static/img/saosao.png" mode="aspectFit" bindtap="togglePoint"></ui-image>
+             </ui-col>
+           </ui-row>
+           <ui-row height="40">
+             <ui-col span="3" align="right" vertical-align="middle"><ui-text>机联网编码</ui-text></ui-col>
+             <ui-col span="7" align="right" vertical-align="middle">
+               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
+             </ui-col>
+             <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
+           </ui-row>
+           <ui-row height="40">
+             <ui-col span="3" align="right" vertical-align="middle"><ui-text>设备名称</ui-text></ui-col>
+             <ui-col span="7" align="right" vertical-align="middle">
+               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
+             </ui-col>
+             <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
+           </ui-row>    
+           <ui-row height="40">
+             <ui-col span="3" align="right" vertical-align="middle"><ui-text>NB号码</ui-text></ui-col>
+             <ui-col span="7" align="right" vertical-align="middle">
+               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
+             </ui-col>
+             <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
+           </ui-row>   
+           <ui-row height="40">
+             <ui-col span="3" align="right" vertical-align="middle"><ui-text>区域名称</ui-text></ui-col>
+             <ui-col span="7" align="right" vertical-align="middle">
+               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
+             </ui-col>
+             <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
+           </ui-row>   
+           <ui-row height="40">
+             <ui-col span="3" align="right" vertical-align="middle"><ui-text>经纬度</ui-text></ui-col>
+             <ui-col span="7" align="right" vertical-align="middle">
+               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
+             </ui-col>
+             <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
+           </ui-row>  
+           <ui-row height="40">
+             <ui-col span="3" align="right" vertical-align="middle">
+               <ui-button type="primary" bindtap="beginSweep">安装</ui-button>
+             </ui-col>
+             <ui-col span="7" align="right" vertical-align="middle">
+               <ui-button type="primary" bindtap="beginSweep">关闭</ui-button> 
+             </ui-col>
+           </ui-row>                                                     
+        </ui-view>
     </ui-view>
   </ui-page>
 </template>
@@ -115,7 +227,7 @@ export default {
   },
   data () {
     return {
-      "showSlideMenu":true,
+      showArea:false,
       latitude: 39.855060,
       longitude: 116.368650,
       scale: 5,
@@ -124,11 +236,30 @@ export default {
       height: ui.WIN_HEIGHT,
       width: ui.WIN_WIDTH,
       isExpand:true,
+      isPoint:true,
+      searchData:{//筛选数据栏.....
+        areaNo:"",//区域
+        intervalDays:"",//未清扫天数....
+        normal:false,//正常设备
+        offline:false,//离线设备
+        voltage:false//电压低于十二伏
+      },
+      viData:{
+        areaName:"全部",
+        selDay:"全部"
+      },
+      mCatDetail:{},
+      days:[{name:"全部",value:"0"},{name:"1天",value:1},{name:"3天",value:3},{name:"5天",value:5}],
+      areaData:{
+        areaName:"",
+        areaNo:""
+      },
+      slideData:[],
       items: [
-        { name: 'USA', value: '美国' },
-        { name: 'CHN', value: '中国', checked: true },
-        { name: 'BRA', value: '巴西', checked: true }
-      ],  
+        { name: '正常设备', value: "normal" ,checked: false },
+        { name: '离线设备', value: "offline", checked: false },
+        { name: '电压低于十二伏', value: "voltage", checked: false }
+      ],
       donut: {
         data: [],
         colorSchema: ['#679DFF', '#FFA067'],
@@ -211,6 +342,7 @@ export default {
         that.getChartData({//请求电压图
           type:"voltage"
         })
+        that.getSlideData();//获取下拉数据.....
       },
       fail(res){
         ui.navigateTo({
@@ -225,15 +357,71 @@ export default {
   computed:{
     getViewClasses (n) {
       let classes = ['menu']
-      classes.push(this.isExpand ? 'expand' : '')
-      debugger;
+      classes.push( this.isExpand ? 'expand' : '' )
       return classes
     }
   },
   methods: {
-    tapWindow(e){
+    isAddArea(e){
+      this.showArea = false;
+    },
+    toggleSlide(e){
       this.isExpand = !this.isExpand;
-      console.log( this.isExpand )
+    },
+    boxChange(e){//checkbox选择......
+      this.searchData.normal = false;
+      this.searchData.offline = false;
+      this.searchData.voltage = false;
+      e.value.forEach((val,i,arr)=>{
+        this.searchData[val] = true;
+      })
+      this.getPosition();
+    },
+    addArea(e){
+      let that = this;
+      this.http({
+        url:"areas/add",
+        method:"POST",
+        params:that.areaData,
+        scb(res){
+          debugger;
+        },
+        fcb(res){
+          
+        }
+      })
+    },
+    selArea(e){//选择地区.....
+      let target = JSON.parse( e.target.dataset.item );
+      this.searchData.areaNo = target.areaNo;
+      this.viData.areaName = target.areaName;
+      this.getPosition();
+    },
+    selDay(e){//选择天数....
+      let target = JSON.parse( e.target.dataset.item );
+      this.searchData.intervalDays = target.value;
+      this.viData.selDay = target.name;
+      this.getPosition();
+    },
+    togglePoint(){
+      this.isPoint = false;
+    },
+    getMcatDetail(e){
+      let that = this;
+      this.isPoint = true;
+      this.http({
+        url:"cars/getDeatial",
+        method:"GET",
+        params:{
+          "macNo":e.markerId
+        },
+        scb(res){
+          that.mCatDetail = res.data.data;
+        },
+        fcb(res){
+          debugger;
+        }
+      })
     },
     controltap (e) {
       if (e.controlId === 1) {
@@ -241,7 +429,7 @@ export default {
       }
     },
     regionchange () {
-
+      
     },
     callouttap (e) {
       if (e.markerId === 2) return
@@ -258,34 +446,55 @@ export default {
         longitude: lng,
         name: names,
         success: function (res) {
-        },
+          },
         fail: function (res) {
-        },
+          },
         complete: function (res) {
-        }
+          }
       })
     },
     go () {
-    },
-		getPosition(){//获取清扫机位置
+      },
+    beginSweep(e){
 			let that = this;
 			this.http({
-				url:'cars/macPosition',
+        url:'cars/macPosition',
 				method:"GET",
 				scb(res){
 					if( res.data.code == 200 ){
-            let _marker = [];
-            res.data.data.forEach((val,i,arr) => {
-              _marker.push({
-                id:i,
-                longitude:val.longitude,
-                latitude:val.latitude
-              })
-            });
-            that.longitude = _marker[0].longitude;
-            that.latitude = _marker[0].latitude;
-            that.markers = _marker;
             return;
+					}
+				},
+				fcb(res){
+					console.log( "errmmm" , res)
+				}
+			})
+    },
+		getPosition(){//获取清扫机位置
+      let that = this;
+      this.isPoint = false;
+			this.http({
+        url:'cars/macPosition',
+        method:"GET",
+        params:this.searchData,
+				scb(res){
+					if( res.data.code == 200 ){
+            if(res.data.data.length != 0){//如果有地标
+              let _marker = [];
+              res.data.data.forEach((val,i,arr) => {
+                _marker.push({
+                  id:val.macNo,
+                  longitude:val.longitude,
+                  latitude:val.latitude
+                })
+              });
+              that.longitude = _marker[0].longitude;
+              that.latitude = _marker[0].latitude;
+              that.markers = _marker;
+              return;
+            }else{//没有地标
+                ui.showToast({ title: "没有清扫车数据", icon: 'none' ,duration:2000})
+            }
 					}
 				},
 				fcb(res){
@@ -333,7 +542,20 @@ export default {
           return
 				}
 			})				
-		}
+    },
+    getSlideData(){//获取下拉数据.......
+      let that = this;
+      this.http({
+        url:"areas/carAreas",
+        method:"GET",
+        scb(res){
+          that.slideData = res.data.data;
+        },
+        fcb(res){
+          
+        }
+      })
+    }
   }
 }
 
@@ -344,7 +566,7 @@ export default {
   .menu{
     background-color: white;
     height: 100%;
-    z-index: 10000;
+    z-index: 100;
     position: fixed;
     width: 0;
     overflow: hidden;
@@ -430,9 +652,13 @@ export default {
 	height: 7vh;
 	background-color: white;
 	align-items: center;
-	z-index: 80;
+	z-index: 10;
 	position: absolute;
 	width: 100%;
+}
+#ui-app{
+  z-index: 10;
+  position: relative;
 }
 .charts{
 	height: 20vh;
@@ -455,6 +681,27 @@ export default {
 		height: 100%;
 		display: inline-block;
 	}
+}
+.sweepCatDetail{
+  position: fixed;
+  height: 40vh;
+  z-index: 90;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+  .detailList{
+    height: 80%;
+    overflow: auto;
+  }
+  .cha{
+    height: 20%;
+    text-align: center;
+    .ui-image{
+      width: 25px!important;
+      height: 25px;
+    }
+  }
 }
 </style>
   

@@ -2,7 +2,7 @@
     <ui-page>
       <ui-view class="content">
       <ui-view class="logo">
-        <ui-image src="/images/logo@2x.png"></ui-image>
+        <ui-image src="/static/images/logo@2x.png"></ui-image>
         <ui-image src=""></ui-image>
         <ui-text>泓米瑞特光伏智能清扫机器人</ui-text>
       </ui-view>
@@ -44,7 +44,7 @@ export default {
   methods: {
       bindLogin() {
 				let that = this;
-          let promise = new Promise((resolve,reject)=>{
+        let promise = new Promise((resolve,reject)=>{
 					resolve()
 				})
 				promise.then(()=>{
@@ -72,7 +72,7 @@ export default {
 								ui.setStorage({
 									key:"userMsg",
 									data:res.data
-								})	
+								})
 							}
 						},
 						fcb(res){

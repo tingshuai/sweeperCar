@@ -15,12 +15,14 @@ ui.extend({
         "content-type" : obj.contentType || "application/json"
       },
       success: (res) => {
-        obj.scb(res)
-        if(res.data.code == 401 || res.data.code == 203 ){//token失效....
-          debugger;
+        if( res.data.code == 203 ){//token失效....
           ui.navigateTo({
             url:`/pages/login`
           })
+        }else if( res.data.code == 200 ){//成功......
+          obj.scb(res)
+        }else if( res.data.code == 401 ){//返回提示.....
+          ui.showToast({ title: res.data.msg, icon: 'none' ,duration:2000})
         }
       },
       fail(res){
