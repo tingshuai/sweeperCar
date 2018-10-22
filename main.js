@@ -6,6 +6,8 @@ let options = {
 ui.extend({
   http(obj){
     let that = this;
+    let a = ui.getApp().globalData.token;
+    debugger;
     ui.request({
       url: `${obj.url}`, //仅为示例，并非真实接口地址。
       method:obj.method || "POST",
@@ -16,6 +18,7 @@ ui.extend({
       },
       success: (res) => {
         if( res.data.code == 203 ){//token失效....
+          debugger;
           ui.navigateTo({
             url:`/pages/login`
           })

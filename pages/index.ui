@@ -1,47 +1,49 @@
 <template>
   <ui-page class="map-wrap" top="0">
     <ui-view class="{{getViewClasses}}" top="0" left="0" bottom="0">
-      <ui-view class="formItem">
+      <ui-view style="font-size:22px;font-weight:bold;margin: 20px 15px;">筛选</ui-view>
+      <ui-view class="formItem formItem2">
           <ui-input placeholder="区域--" ui:model="{{ viData.areaName }}"></ui-input>
-          <ui-icon type="ring" size="32" color="#09BB07"></ui-icon>
-          <ui-view>
-              <ui-view data-item="{{JSON.stringify({areaNo:'',areaName:'全部'}) }}" bindtap="selArea">全部</ui-view>
-              <ui-view ui:for="{{ slideData }}" data-item="{{JSON.stringify(item) }}" bindtap="selArea">{{ item.areaName }}</ui-view>
+          <ui-text class="angle">▼</ui-text>
+          <ui-view class="qf_slide">
+              <ui-view class="slideItem" data-item="{{JSON.stringify({areaNo:'',areaName:'全部'}) }}" bindtap="selArea">全部</ui-view>
+              <ui-view class="slideItem" ui:for="{{ slideData }}" data-item="{{JSON.stringify(item) }}" bindtap="selArea">{{ item.areaName }}</ui-view>
           </ui-view>
       </ui-view>
       <ui-view class="formTextBtn">
           <ui-text bindtap="isAddArea">添加区域</ui-text>
       </ui-view>
-      <ui-view class="formItem" ui:show="{{ showArea }}">
+      <ui-view class="formItem formItem1" ui:show="{{ showArea }}">
           <ui-text type="ring" size="32">区域编码</ui-text>
           <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
+          <ui-view style="height:20px;"></ui-view>
           <ui-text type="ring" size="32">区域名称</ui-text>
           <ui-input placeholder="" ui:model="{{ areaData.areaName }}"></ui-input>          
       </ui-view>
-      <ui-view class="formTextBtn">
+      <ui-view class="formTextBtn" ui:show="{{ showArea }}">
           <ui-text bindtap="isAddArea" ui:if="{{ showArea }}">取消</ui-text>
           <ui-text ui:else style="color:gray;">取消</ui-text>
           <ui-text bindtap="addArea">完成</ui-text>
       </ui-view>      
-      <ui-view class="formItem">
+      <ui-view class="formItem formItem2">
           <ui-input placeholder="未清扫天数" ui:model="{{ viData.selDay }}"></ui-input>
-          <ui-icon type="ring" size="32" color="#09BB07"></ui-icon>
-          <ui-view>
-              <ui-view ui:for="{{ days }}" data-item="{{ JSON.stringify( item ) }}" bindtap="selDay">{{ item.name }}</ui-view>
-          </ui-view>          
+          <ui-text class="angle">▼</ui-text>
+          <ui-view class="qf_slide">
+              <ui-view class="slideItem" ui:for="{{ days }}" data-item="{{ JSON.stringify( item ) }}" bindtap="selDay">{{ item.name }}</ui-view>
+          </ui-view>
       </ui-view>
       <ui-view class="formItem">
         <ui-checkbox-group bindchange="boxChange">
           <ui-label class="checkbox" ui:for="{{items}}">
-            <ui-checkbox value="{{ item.value }}" checked="{{ item.checked }}" ></ui-checkbox>{{ item.name }}
+            <ui-checkbox style="margin:10px 10px;" value="{{ item.value }}" checked="{{ item.checked }}" ></ui-checkbox>{{ item.name }}
           </ui-label>
         </ui-checkbox-group>
       </ui-view>
-      <ui-button type="primary" bindtap="beginSweep">清扫</ui-button>       
+      <ui-button class="myBtn" type="primary" bindtap="beginSweep">清扫</ui-button>       
     </ui-view>
     <!-- 功能按钮组 -->
     <ui-image src="/static/img/group.png" mode="aspectFit" class="qf_control" bindtap="toggleSlide"></ui-image>
-    <ui-image src="/static/img/plus.png" mode="aspectFit" class="qf_plus"></ui-image>
+    <ui-image src="/static/img/plus.png" mode="aspectFit" class="qf_plus" bindtap="toggleAddCar"></ui-image>
     <ui-view id="ui-app">
           <ui-map 
             id="map"
@@ -60,14 +62,14 @@
             style="width:100%;height:100vh;">
           </ui-map>
           <ui-view class="header">
-            <ui-view class="h_left">
-              sdf{{ mCatDetail.macNo}}
+            <ui-view class="h_left" style="width:50px; text-align:center;">
+              <ui-image src="/static/img/logo@2x.png" mode="aspectFit"></ui-image>
             </ui-view>
             <ui-view class="h_center">
               标题
             </ui-view>
-            <ui-view class="h_right">
-              <ui-text>退出</ui-text>
+            <ui-view class="h_right" style="width:50px; text-align:center;">
+              <ui-text bindtap="exit">退出</ui-text>
             </ui-view>
           </ui-view>
           <ui-view class="charts" ui:show="{{ !isPoint }}">
@@ -116,7 +118,7 @@
             <ui-view class="detailList">
               <ui-row height="40">
                 <ui-col align="left" vertical-align="middle"><ui-text>机联网编码:{{ mCatDetail.macNo || '' }}</ui-text></ui-col>
-                <ui-col align="right" vertical-align="middle"><ui-button>远程请扫</ui-button></ui-col>
+                <ui-col align="right" vertical-align="middle"><ui-button bindtap="beginSweep">远程请扫</ui-button></ui-col>
               </ui-row>            
               <ui-row height="40">
                 <ui-col align="right" vertical-align="middle">电机电压:{{ mCatDetail.motorVoltage  || '' }}</ui-col>
@@ -153,63 +155,46 @@
           </ui-view>
     </ui-view>
     <ui-view class="qf_model" ui:show="{{ isExpand }}" bindtap="toggleSlide"></ui-view><!--模态框-->
-    <ui-view class="addCarModel">
+    <ui-view class="addCarModel" ui:show="isAddCar">
         <ui-view class="addCar">
            <ui-row height="40">
-             <ui-col align="right" vertical-align="middle"><ui-text>远程请扫</ui-text></ui-col>
+             <ui-col align="center" vertical-align="middle"><ui-text>远程请扫</ui-text></ui-col>
            </ui-row>
            <ui-row height="40">
              <ui-col span="3" align="right" vertical-align="middle"><ui-text>机联网编码</ui-text></ui-col>
-             <ui-col span="7" align="right" vertical-align="middle">
-               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
+             <ui-col span="7" align="right" space-left="8" vertical-align="middle">
+               <ui-input placeholder="" ui:model="{{ carData.macNo }}"></ui-input>
              </ui-col>
-             <ui-col sapn="2" align="right" vertical-align="middle">
+             <ui-col sapn="2" align="center" vertical-align="middle">
               <ui-image src="/static/img/saosao.png" mode="aspectFit" bindtap="togglePoint"></ui-image>
              </ui-col>
            </ui-row>
            <ui-row height="40">
-             <ui-col span="3" align="right" vertical-align="middle"><ui-text>机联网编码</ui-text></ui-col>
-             <ui-col span="7" align="right" vertical-align="middle">
-               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
-             </ui-col>
-             <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
-           </ui-row>
-           <ui-row height="40">
-             <ui-col span="3" align="right" vertical-align="middle"><ui-text>设备名称</ui-text></ui-col>
-             <ui-col span="7" align="right" vertical-align="middle">
-               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
-             </ui-col>
-             <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
-           </ui-row>    
-           <ui-row height="40">
-             <ui-col span="3" align="right" vertical-align="middle"><ui-text>NB号码</ui-text></ui-col>
-             <ui-col span="7" align="right" vertical-align="middle">
-               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
-             </ui-col>
-             <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
-           </ui-row>   
-           <ui-row height="40">
              <ui-col span="3" align="right" vertical-align="middle"><ui-text>区域名称</ui-text></ui-col>
-             <ui-col span="7" align="right" vertical-align="middle">
-               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
+             <ui-col span="7" align="right" space-left="8" vertical-align="middle">
+               <ui-input placeholder="" ui:model="{{ carData.areaNo }}"></ui-input>
              </ui-col>
              <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
            </ui-row>   
            <ui-row height="40">
              <ui-col span="3" align="right" vertical-align="middle"><ui-text>经纬度</ui-text></ui-col>
-             <ui-col span="7" align="right" vertical-align="middle">
-               <ui-input placeholder="" ui:model="{{ areaData.areaNo }}"></ui-input>
+             <ui-col span="7" align="right" space-left="8" vertical-align="middle">
+               <ui-input placeholder="" ui:model="{{ carData.lonAndLat }}"></ui-input>
              </ui-col>
              <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
-           </ui-row>  
-           <ui-row height="40">
-             <ui-col span="3" align="right" vertical-align="middle">
-               <ui-button type="primary" bindtap="beginSweep">安装</ui-button>
+           </ui-row>
+           <ui-row height="40" style="justify-content:space-around">
+             <ui-col span="4" align="center" vertical-align="middle"></ui-col>
+             <ui-col span="4" align="center" vertical-align="middle"><ui-view bindtap="obtainlonAndLat">获取经纬度</ui-view></ui-col>
+           </ui-row>           
+           <ui-row height="40" style="justify-content:space-around">
+             <ui-col span="4" align="center" vertical-align="top">
+               <ui-button type="primary" bindtap="addCar">安装</ui-button>
              </ui-col>
-             <ui-col span="7" align="right" vertical-align="middle">
-               <ui-button type="primary" bindtap="beginSweep">关闭</ui-button> 
+             <ui-col span="4" align="center" vertical-align="middle">
+               <ui-button type="primary" bindtap="toggleAddCar">关闭</ui-button> 
              </ui-col>
-           </ui-row>                                                     
+           </ui-row>
         </ui-view>
     </ui-view>
   </ui-page>
@@ -218,7 +203,7 @@
 <script>
 // mapDemo.js
 // mapDemo02.js
-var pathIcon = require('#/images/map/path.png')
+var pathIcon = require('#/images/map/path.png');
 let app = ui.getApp().globalData;
 export default {
   config: {
@@ -235,6 +220,7 @@ export default {
       mapCtx: null,
       height: ui.WIN_HEIGHT,
       width: ui.WIN_WIDTH,
+      isAddCar:false,//是否显示添加清扫车模态框.......
       isExpand:true,
       isPoint:true,
       searchData:{//筛选数据栏.....
@@ -253,6 +239,13 @@ export default {
       areaData:{
         areaName:"",
         areaNo:""
+      },
+      carData:{
+        areaNo:"",
+        lonAndLat:"",
+        macNo:"",
+        latitude:"",
+        longitude:""
       },
       slideData:[],
       items: [
@@ -318,7 +311,7 @@ export default {
       bar2:{
         colorSchema: ['#679DFF', '#FFA067'],
         data: []
-      }       
+      }
     }
   },
   created () {
@@ -363,10 +356,74 @@ export default {
   },
   methods: {
     isAddArea(e){
-      this.showArea = false;
+      this.showArea = !this.showArea;
     },
     toggleSlide(e){
       this.isExpand = !this.isExpand;
+    },
+    toggleAddCar(e){
+      this.isAddCar = !this.isAddCar;
+    },
+    exit(){//退出登录......
+      let that = this;
+      ui.showConfirm({
+        content: '您确定要退出登录吗？',
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        success (result) {
+          if(result.confirm){
+            that.http({
+              url:"sys/logout",
+              method:"POST",
+              contentType:"application/x-www-form-urlencoded",
+              scb(res){
+                ui.removeStorage({
+                  key: 'userMsg',
+                  success: function (res) {
+                    app.token = "";
+                    app.userMsg = "";
+                  }
+                })
+              }
+            })              
+          }
+        }
+      })
+    },
+    beginSweep(e){
+      let that = this;
+      let _param = {
+        commcodes:[],
+        isClear:1,//是否立即请扫
+        lastCleanVoltageDrop:"",//上次请扫降压....
+        motorVoltage:""
+      };
+      this.http({
+        url:"cars/sweeper",
+        method:"POST",
+        contentType:"application/x-www-form-urlencoded",
+        params:_param,
+        scb(res){
+          debugger;
+        },
+        fcb(res){
+          
+        }
+      })  
+    },
+    obtainlonAndLat(e){
+      var that = this
+      ui.chooseLocation({
+        backgroundColor:'#3399ff',
+        success (res) {
+          that.carData.latitude = res.latitude;
+          that.carData.longitude = res.longitude;
+          that.carData.lonAndLat = `纬度${res.latitude}-经度${res.longitude}`
+        },
+        fail (res) {
+          console.log('fail:', res)
+        }
+      })      
     },
     boxChange(e){//checkbox选择......
       this.searchData.normal = false;
@@ -376,6 +433,21 @@ export default {
         this.searchData[val] = true;
       })
       this.getPosition();
+    },
+    addCar(){
+      let that = this;
+      this.http({
+        url:"cars/add",
+        method:"POST",
+        contentType:"application/x-www-form-urlencoded",
+        params:that.carData,
+        scb(res){
+          debugger;
+        },
+        fcb(res){
+          
+        }
+      })      
     },
     addArea(e){
       let that = this;
@@ -503,7 +575,7 @@ export default {
 			})
 		},
 		getChartData(obj){//获取设备状态数量
-			let that = this;
+      let that = this;
 			this.http({
 				url:'cars/getVoltageStatic',
 				method:"GET",
@@ -569,7 +641,7 @@ export default {
     z-index: 100;
     position: fixed;
     width: 0;
-    overflow: hidden;
+    overflow: auto;
     transition: all 0.2s;
   }
   .expand{
@@ -654,7 +726,10 @@ export default {
 	align-items: center;
 	z-index: 10;
 	position: absolute;
-	width: 100%;
+  width:90vw;
+  margin: 0 5vw;
+  border-radius: 10px;
+  box-shadow: 1px 2px 8px rgba(0, 0, 0, 0.4);
 }
 #ui-app{
   z-index: 10;
@@ -702,6 +777,74 @@ export default {
       height: 25px;
     }
   }
+}
+.addCarModel{
+  position: absolute;
+  z-index: 888;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content:space-around;
+  align-items:center;
+  .addCar{
+    height: auto;
+    width: 80vw;
+    background-color: white;
+    border-radius: 10px;
+    position: relative;
+  }
+}
+.angle{
+  position: absolute;
+  z-index: 100;
+  right: 8px;
+  top: 4px;
+  color: #C3C3C3;
+}
+.formTextBtn{
+  text-align: right;
+  font-size: 12px;
+  padding-right: 18px;
+  margin: 10px 0 15px 0;
+}
+.formItem{
+  display: block;
+  width: 80%;
+  margin: 0 auto;
+  position: relative;
+  .checkbox{
+    color: gray;
+    font-size: 12px;
+  }
+  .ui-checkbox{
+    margin: 10px 4px 10px 0px!important;
+  }
+}
+.formItem1{
+    .ui-input{
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+}
+.formItem2{
+  .ui-input{
+    border-radius: 1px;
+    height: 30px;
+    input{
+      height: 28px;
+      font-size: 14px;
+    }
+  }
+}
+.myBtn{
+  background-color: #FF6600;
+  width: 90vw;
 }
 </style>
   

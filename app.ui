@@ -329,7 +329,7 @@ body {
   position: fixed!important;
   z-index: 20;
   top: 80px;
-  left:10px;
+  left:5vw;
   width: 40px;
   height: 40px;  
 }
@@ -337,7 +337,7 @@ body {
   position: fixed!important;
   z-index: 20;
   top:80px;
-  right: 10px;
+  right: 5vw;
   width: 40px;
   height: 40px;
 }
@@ -349,5 +349,17 @@ body {
   bottom: 0;
   right: 0;
   background-color: rgba(0,0,0,0.5);
+}
+.qf_slide{
+  max-height: 100px;
+  overflow: auto;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  text-indent: 14px;
+  .slideItem{
+    height: 25px;
+    line-height: 25px;
+    font-size: 12px;
+    // border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
 }
 </style>
