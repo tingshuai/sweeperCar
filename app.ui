@@ -187,7 +187,9 @@ export default {
     }
   },
   mounted () {
-
+      window.setTimeout(() => {
+        ui.closeSplashscreen()
+      }, 1000)
   }
 }
 </script>

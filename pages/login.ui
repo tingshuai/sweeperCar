@@ -2,7 +2,7 @@
     <ui-page class="myPage">
       <ui-view class="content">
         <ui-view class="logo txt">
-          <ui-image class="txt logoImg" mode="aspectFit" src="/static/img/logowhite@2x.png"></ui-image>
+          <ui-image class="txt logoImg" mode="aspectFit" src="./static/img/logowhite@2x.png"></ui-image>
           <ui-view class="txt txt1">Homie Great</ui-view>
           <ui-view class="txt txt2">泓米瑞特光伏智能清扫机器人</ui-view>
         </ui-view>
@@ -21,7 +21,7 @@
         </ui-form>
       </ui-view>
       <ui-view class="bottomImg txt">
-        <ui-image class="txt" mode="aspectFit" src="/static/img/font@2x.png"></ui-image>
+        <ui-image class="txt" mode="aspectFit" src="./static/img/font@2x.png"></ui-image>
       </ui-view>      
     </ui-page>
 </template>
@@ -37,9 +37,9 @@ export default {
   data () {
     return {
       providerList: [],
-      account: '13758329041',
+      account: '18558241440',
       password: '123456',
-      positionTop: 0      
+      positionTop: 0,
     }
   },
   methods: {
@@ -63,9 +63,8 @@ export default {
 									success() {
                     ui.getApp().globalData.token = res.data.token;
                     ui.getApp().globalData.userMsg = res.data;
-                    debugger;
 										ui.showToast({
-												title: "return back",
+												title: "登录成功",
 												duration: 2000
 										});
 										ui.navigateBack();
@@ -159,8 +158,8 @@ export default {
   border-radius: 2px;
 }
 .logoImg{
-    height: 20px;;
-    margin: 30px 0 0 0;
+    height: 30px;;
+    margin: 40px 0 0 0;
 }
 .bottomImg{
     position: fixed;

@@ -1,11 +1,11 @@
 <template>
-  <ui-page class="map-wrap" top="0">
+  <ui-page class="map-wrap" top="0" page-load="{{ pageLoad }}">
     <ui-view class="{{getViewClasses}}" top="0" left="0" bottom="0">
       <ui-view style="font-size:22px;font-weight:bold;margin: 20px 15px;">筛选</ui-view>
       <ui-view class="formItem formItem2">
-          <ui-input placeholder="区域--" ui:model="{{ viData.areaName }}"></ui-input>
-          <ui-text class="angle">▼</ui-text>
-          <ui-view class="qf_slide">
+          <ui-input placeholder="区域--" show-clear="{{ false }}" ui:model="{{ viData.areaName }}"></ui-input>
+          <ui-text class="angle" bindtap="showList" data-target="showArea">▼</ui-text>
+          <ui-view class="qf_slide" ui:show="{{ viData.showArea }}">
               <ui-view class="slideItem" data-item="{{JSON.stringify({areaNo:'',areaName:'全部'}) }}" bindtap="selArea">全部</ui-view>
               <ui-view class="slideItem" ui:for="{{ slideData }}" data-item="{{JSON.stringify(item) }}" bindtap="selArea">{{ item.areaName }}</ui-view>
           </ui-view>
@@ -26,9 +26,9 @@
           <ui-text bindtap="addArea">完成</ui-text>
       </ui-view>      
       <ui-view class="formItem formItem2">
-          <ui-input placeholder="未清扫天数" ui:model="{{ viData.selDay }}"></ui-input>
-          <ui-text class="angle">▼</ui-text>
-          <ui-view class="qf_slide">
+          <ui-input placeholder="未清扫天数" show-clear="{{ false }}" ui:model="{{ viData.selDay }}"></ui-input>
+          <ui-text class="angle" bindtap="showList" data-target="showDayList">▼</ui-text>
+          <ui-view class="qf_slide" ui:show="{{ viData.showDayList }}">
               <ui-view class="slideItem" ui:for="{{ days }}" data-item="{{ JSON.stringify( item ) }}" bindtap="selDay">{{ item.name }}</ui-view>
           </ui-view>
       </ui-view>
@@ -39,11 +39,11 @@
           </ui-label>
         </ui-checkbox-group>
       </ui-view>
-      <ui-button class="myBtn" type="primary" bindtap="beginSweep">清扫</ui-button>       
+      <ui-button class="myBtn" data-onlyone="{{ false }}" bindtap="beginSweep">清扫</ui-button>       
     </ui-view>
     <!-- 功能按钮组 -->
-    <ui-image src="/static/img/group.png" mode="aspectFit" class="qf_control" bindtap="toggleSlide"></ui-image>
-    <ui-image src="/static/img/plus.png" mode="aspectFit" class="qf_plus" bindtap="toggleAddCar"></ui-image>
+    <ui-image src="./static/img/group.png" mode="aspectFit" class="qf_control" bindtap="toggleSlide"></ui-image>
+    <ui-image src="./static/img/plus.png" mode="aspectFit" class="qf_plus" bindtap="toggleAddCar"></ui-image>
     <ui-view id="ui-app">
           <ui-map 
             id="map"
@@ -62,11 +62,11 @@
             style="width:100%;height:100vh;">
           </ui-map>
           <ui-view class="header">
-            <ui-view class="h_left" style="width:50px; text-align:center;">
-              <ui-image src="/static/img/logo@2x.png" mode="aspectFit"></ui-image>
+            <ui-view class="h_left" style="width:50px; text-align:center;padding: 0 5px;">
+              <ui-image src="./static/img/logo@2x.png" mode="aspectFit"></ui-image>
             </ui-view>
             <ui-view class="h_center">
-              标题
+              {{ userMsg.userName }}
             </ui-view>
             <ui-view class="h_right" style="width:50px; text-align:center;">
               <ui-text bindtap="exit">退出</ui-text>
@@ -76,7 +76,7 @@
             <ui-view id="c_left">
               <ui-bar
                     value="{{bar2.data}}"
-                    height="{{ height*0.2 }}"
+                    height="{{ Math.floor( height*0.25 ) }}"
                     width="{{width/2}}"
                     is-animated="true"
                     tooltip="true"
@@ -93,7 +93,7 @@
                 <ui-donut
                     value="{{donut.data}}"
                     width="{{ width/2 }}"
-                    height="{{ height*0.2 }}"
+                    height="{{ Math.floor(height * 0.25) }}"
                     external-radius="50"
                     internal-radius="30"
                     is-animated="true"
@@ -116,83 +116,109 @@
           </ui-view>
           <ui-view class="sweepCatDetail" ui:show="{{ isPoint }}">
             <ui-view class="detailList">
-              <ui-row height="40">
-                <ui-col align="left" vertical-align="middle"><ui-text>机联网编码:{{ mCatDetail.macNo || '' }}</ui-text></ui-col>
-                <ui-col align="right" vertical-align="middle"><ui-button bindtap="beginSweep">远程请扫</ui-button></ui-col>
-              </ui-row>            
-              <ui-row height="40">
-                <ui-col align="right" vertical-align="middle">电机电压:{{ mCatDetail.motorVoltage  || '' }}</ui-col>
-                <ui-col align="right" vertical-align="middle">续航里程:{{ mCatDetail.cruisingRadius  || '' }}</ui-col>
+              <ui-row height="50" style="border-bottom:1px solid rgba(230,230,230,1)">
+                <ui-col class="txtLeft title" align="left" span="9" vertical-align="middle"><ui-text>机联网编码:{{ mCatDetail.macNo || '' }}</ui-text></ui-col>
+                <ui-col class="" align="right" span="3" vertical-align="top"><ui-button class="sweepButton" data-onlyone="{{ true }}" bindtap="beginSweep">远程请扫</ui-button></ui-col>
               </ui-row>
               <ui-row height="40">
-                <ui-col align="right" vertical-align="middle">上次清扫压降（V）:{{ mCatDetail.lastCleanVoltageDrop   || '' }}</ui-col>
-                <ui-col align="right" vertical-align="middle">电池使用时间:{{ mCatDetail.batteryUseTime || '' }}</ui-col>
+                <ui-col class="txtLeft" align="right" vertical-align="middle">
+                  <ui-text class="textLeft">电机电压:</ui-text><ui-text class="textRight">{{ mCatDetail.motorVoltage  || '' }}</ui-text>
+                </ui-col>
+                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                  <ui-text class="textLeft">续航里程:</ui-text><ui-text class="textRight">{{ mCatDetail.cruisingRadius  || '' }}</ui-text>
+                </ui-col>
               </ui-row>
               <ui-row height="40">
-                <ui-col align="right" vertical-align="middle">运行状态:{{ mCatDetail.runState || '' }}</ui-col>
-                <ui-col align="right" vertical-align="middle">故障状态:{{ mCatDetail.errorState || '' }}</ui-col>
+                <ui-col class="txtLeft" align="right" vertical-align="middle">
+                  <ui-text class="textLeft">上次清扫压降（V）:</ui-text><ui-text class="textRight">{{ mCatDetail.lastCleanVoltageDrop || '' }}</ui-text>
+                </ui-col>
+                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                  <ui-text class="textLeft">电池使用时间:</ui-text><ui-text class="textRight">{{ mCatDetail.batteryUseTime || '' }}</ui-text>
+                </ui-col>
+              </ui-row>
+              <ui-row height="40">
+                <ui-col class="txtLeft" align="right" vertical-align="middle">
+                  <ui-text class="textLeft">运行状态:</ui-text><ui-text class="textRight">{{ mCatDetail.runState || '' }}</ui-text>
+                </ui-col>
+                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                  <ui-text class="textLeft">故障状态:</ui-text><ui-text class="textRight">{{ mCatDetail.errorState || '' }}</ui-text>
+                </ui-col>
               </ui-row>        
               <ui-row height="40">
-                <ui-col align="right" vertical-align="middle">历史清扫次数:{{ mCatDetail.hisTimes || '' }}</ui-col>
-                <ui-col align="right" vertical-align="middle">当天清扫次数:{{ mCatDetail.todayTimes || '' }}</ui-col>
+                <ui-col class="txtLeft" align="right" vertical-align="middle">
+                  <ui-text class="textLeft">历史清扫次数:</ui-text><ui-text class="textRight">{{ mCatDetail.hisTimes || '' }}</ui-text>
+                </ui-col>
+                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                  <ui-text class="textLeft">当天清扫次数:</ui-text><ui-text class="textRight">{{ mCatDetail.todayTimes || '' }}</ui-text>
+                </ui-col>
               </ui-row>    
               <ui-row height="40">
-                <ui-col align="right" vertical-align="middle">电池状态:{{ mCatDetail.batteryState || '' }}</ui-col>
-                <ui-col align="right" vertical-align="middle">主电板电压:{{ mCatDetail.mainVoltage || '' }}</ui-col>
+                <ui-col class="txtLeft" align="right" vertical-align="middle">
+                  <ui-text class="textLeft">电池状态:</ui-text><ui-text class="textRight">{{ mCatDetail.batteryState || '' }}</ui-text>
+                </ui-col>
+                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                  <ui-text class="textLeft">主电板电压:</ui-text><ui-text class="textRight">{{ mCatDetail.mainVoltage || '' }}</ui-text>
+                </ui-col>
               </ui-row>   
               <ui-row height="40">
-                <ui-col align="right" vertical-align="middle">上次清扫时间:{{ mCatDetail.lastCleanTime || '' }}</ui-col>
-                <ui-col align="right" vertical-align="middle">上次清扫平均电流:{{ mCatDetail.lastCleanCurrent || '' }}</ui-col>
+                <ui-col class="txtLeft" align="right" vertical-align="middle">
+                  <ui-text class="textLeft">上次清扫时间:</ui-text><ui-text class="textRight">{{ mCatDetail.lastCleanTime || '' }}</ui-text>
+                </ui-col>
+                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                  <ui-text class="textLeft">上次清扫平均电流:</ui-text><ui-text class="textRight">{{ mCatDetail.lastCleanCurrent || '' }}</ui-text>
+                </ui-col>
               </ui-row>       
               <ui-row height="40">
-                <ui-col align="right" vertical-align="middle">上次清扫用时:{{ mCatDetail.lastUseTime || '' }}</ui-col>
-                <ui-col align="right" vertical-align="middle"></ui-col>
-              </ui-row>                                                                      
+                <ui-col class="txtLeft" align="right" vertical-align="middle">
+                  <ui-text class="textLeft">上次清扫用时:</ui-text><ui-text class="textRight">{{ mCatDetail.lastUseTime || '' }}</ui-text>
+                </ui-col>
+                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle"></ui-col>
+              </ui-row>
             </ui-view>
             <ui-view class="cha">
-              <ui-image src="/static/img/cha.png" mode="aspectFit" bindtap="togglePoint"></ui-image>
+              <ui-image src="./static/img/cha.png" bindtap="togglePoint"></ui-image>
             </ui-view>
           </ui-view>
     </ui-view>
     <ui-view class="qf_model" ui:show="{{ isExpand }}" bindtap="toggleSlide"></ui-view><!--模态框-->
     <ui-view class="addCarModel" ui:show="isAddCar">
         <ui-view class="addCar">
-           <ui-row height="40">
-             <ui-col align="center" vertical-align="middle"><ui-text>远程请扫</ui-text></ui-col>
+           <ui-row height="60">
+             <ui-col align="center" vertical-align="middle"><ui-text class="formItemTit formItemTit1">远程请扫</ui-text></ui-col>
            </ui-row>
            <ui-row height="40">
-             <ui-col span="3" align="right" vertical-align="middle"><ui-text>机联网编码</ui-text></ui-col>
-             <ui-col span="7" align="right" space-left="8" vertical-align="middle">
+             <ui-col span="3" align="right" vertical-align="middle"><ui-text class="formItemTit">机联网编码</ui-text></ui-col>
+             <ui-col class="formItem2" span="7" align="right" space-left="8" vertical-align="middle">
                <ui-input placeholder="" ui:model="{{ carData.macNo }}"></ui-input>
              </ui-col>
              <ui-col sapn="2" align="center" vertical-align="middle">
-              <ui-image src="/static/img/saosao.png" mode="aspectFit" bindtap="togglePoint"></ui-image>
+              <ui-image src="./static/img/saosao.png" class="saoma" mode="aspectFit" bindtap="saoma"></ui-image>
              </ui-col>
            </ui-row>
            <ui-row height="40">
-             <ui-col span="3" align="right" vertical-align="middle"><ui-text>区域名称</ui-text></ui-col>
-             <ui-col span="7" align="right" space-left="8" vertical-align="middle">
+             <ui-col span="3" align="right" vertical-align="middle"><ui-text class="formItemTit">区域名称</ui-text></ui-col>
+             <ui-col span="7" class="formItem2" align="right" space-left="8" vertical-align="middle">
                <ui-input placeholder="" ui:model="{{ carData.areaNo }}"></ui-input>
              </ui-col>
              <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
            </ui-row>   
            <ui-row height="40">
-             <ui-col span="3" align="right" vertical-align="middle"><ui-text>经纬度</ui-text></ui-col>
-             <ui-col span="7" align="right" space-left="8" vertical-align="middle">
+             <ui-col span="3" align="right" vertical-align="middle"><ui-text class="formItemTit">经纬度</ui-text></ui-col>
+             <ui-col span="7" class="formItem2" align="right" space-left="8" vertical-align="middle">
                <ui-input placeholder="" ui:model="{{ carData.lonAndLat }}"></ui-input>
              </ui-col>
              <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
            </ui-row>
            <ui-row height="40" style="justify-content:space-around">
              <ui-col span="4" align="center" vertical-align="middle"></ui-col>
-             <ui-col span="4" align="center" vertical-align="middle"><ui-view bindtap="obtainlonAndLat">获取经纬度</ui-view></ui-col>
+             <ui-col span="4" align="center" space-right="14" vertical-align="top"><ui-view bindtap="obtainlonAndLat" style="color:#FF7E28;">地理定位</ui-view></ui-col>
            </ui-row>           
-           <ui-row height="40" style="justify-content:space-around">
-             <ui-col span="4" align="center" vertical-align="top">
-               <ui-button type="primary" bindtap="addCar">安装</ui-button>
+           <ui-row height="50" style="justify-content:space-around" class="btnGroup">
+             <ui-col span="5" space-left="10" align="center" vertical-align="top">
+               <ui-button bindtap="addCar" class="confirm">安装</ui-button>
              </ui-col>
-             <ui-col span="4" align="center" vertical-align="middle">
-               <ui-button type="primary" bindtap="toggleAddCar">关闭</ui-button> 
+             <ui-col span="5" space-right="10" align="center" vertical-align="middle">
+               <ui-button bindtap="toggleAddCar" class="cancel">关闭</ui-button> 
              </ui-col>
            </ui-row>
         </ui-view>
@@ -221,7 +247,7 @@ export default {
       height: ui.WIN_HEIGHT,
       width: ui.WIN_WIDTH,
       isAddCar:false,//是否显示添加清扫车模态框.......
-      isExpand:true,
+      isExpand:false,
       isPoint:true,
       searchData:{//筛选数据栏.....
         areaNo:"",//区域
@@ -232,7 +258,9 @@ export default {
       },
       viData:{
         areaName:"全部",
-        selDay:"全部"
+        selDay:"全部",
+        showDayList:false,//未清扫天数
+        showArea:false//区域
       },
       mCatDetail:{},
       days:[{name:"全部",value:"0"},{name:"1天",value:1},{name:"3天",value:3},{name:"5天",value:5}],
@@ -311,6 +339,34 @@ export default {
       bar2:{
         colorSchema: ['#679DFF', '#FFA067'],
         data: []
+      },
+      userMsg:{},
+      pageLoad:{
+        trigger:'always',
+        handle:()=>{
+          let that = this;
+          ui.getStorage({
+            key:"userMsg",
+            success(res){
+              app.token = res.data.token;
+              app.userMsg = res.data;
+              that.userMsg = res.data;
+              that.getPosition();
+              that.getChartData({//请求异常图.
+                type:"normal"
+              })
+              that.getChartData({//请求电压图
+                type:"voltage"
+              })
+              that.getSlideData();//获取下拉数据.....
+            },
+            fail(res){
+              ui.navigateTo({
+                url:'/pages/login'
+              })
+            }
+          })
+        }
       }
     }
   },
@@ -323,26 +379,6 @@ export default {
   mounted () {
     let that = this;
     this.mapCtx = ui.createMapContext('map')
-    ui.getStorage({
-      key:"userMsg",
-      success(res){
-        app.token = res.data.token;
-        app.userMsg = res.data;
-        that.getPosition();
-        that.getChartData({//请求异常图.
-          type:"normal"
-        })
-        that.getChartData({//请求电压图
-          type:"voltage"
-        })
-        that.getSlideData();//获取下拉数据.....
-      },
-      fail(res){
-        ui.navigateTo({
-          url:'/pages/login'
-        })
-      }
-    })
   },
   watch:{
 
@@ -364,6 +400,10 @@ export default {
     toggleAddCar(e){
       this.isAddCar = !this.isAddCar;
     },
+    showList(e){
+      let _target = e.currentTarget.dataset.target;
+      this.viData[_target] = !this.viData[_target];
+    },
     exit(){//退出登录......
       let that = this;
       ui.showConfirm({
@@ -372,39 +412,50 @@ export default {
         cancelButtonText: '取消',
         success (result) {
           if(result.confirm){
-            that.http({
-              url:"sys/logout",
-              method:"POST",
-              contentType:"application/x-www-form-urlencoded",
-              scb(res){
-                ui.removeStorage({
-                  key: 'userMsg',
-                  success: function (res) {
-                    app.token = "";
-                    app.userMsg = "";
-                  }
-                })
-              }
-            })              
+            app.token = "";
+            app.userMsg = "";
+            ui.navigateTo({
+              url:'/pages/login'
+            })
+            // that.http({
+            //   url:"sys/logout",
+            //   method:"POST",
+            //   contentType:"application/x-www-form-urlencoded",
+            //   scb(res){
+            //     ui.removeStorage({
+            //       key: 'userMsg',
+            //       success: function (res) {
+            //       }
+            //     })
+            //   }
+            // })              
           }
         }
       })
     },
     beginSweep(e){
       let that = this;
+      let _target = e.currentTarget.dataset.onlyone;
       let _param = {
         commcodes:[],
         isClear:1,//是否立即请扫
-        lastCleanVoltageDrop:"",//上次请扫降压....
-        motorVoltage:""
+        lastCleanVoltageDrop: _target == 'true' ? that.mCatDetail.lastCleanVoltageDrop : "",//上次请扫降压....
+        motorVoltage: _target == 'true' ? that.mCatDetail.motorVoltage : ""//电机电压
       };
+      if( _target == "false" ){
+        this.markers.forEach((val,i,arr)=>{
+          _param.commcodes.push(val.id)
+        });
+      }else{
+        _param.commcodes = [that.mCatDetail.macNo]
+      }
       this.http({
         url:"cars/sweeper",
         method:"POST",
         contentType:"application/x-www-form-urlencoded",
         params:_param,
         scb(res){
-          debugger;
+            ui.showToast({ title: "发送指令成功", icon: 'none' ,duration:2000})
         },
         fcb(res){
           
@@ -512,6 +563,17 @@ export default {
         this.toSysMap(39.858620, 116.369580, '右安门翠林小区二里')
       }
     },
+    saoma(){
+        let that = this;
+        ui.scanCode({
+          success: (res) => {
+            that.carData.macNo = res.result;
+          },
+          fail:(res)=>{
+            ui.showToast({ title: '未识别,请重新选择。', icon:"none", duration:1500 });
+          }
+        })      
+    },
     toSysMap (lat, lng, names) {
       ui.openSysMap({
         latitude: lat,
@@ -524,23 +586,6 @@ export default {
         complete: function (res) {
           }
       })
-    },
-    go () {
-      },
-    beginSweep(e){
-			let that = this;
-			this.http({
-        url:'cars/macPosition',
-				method:"GET",
-				scb(res){
-					if( res.data.code == 200 ){
-            return;
-					}
-				},
-				fcb(res){
-					console.log( "errmmm" , res)
-				}
-			})
     },
 		getPosition(){//获取清扫机位置
       let that = this;
@@ -565,7 +610,10 @@ export default {
               that.markers = _marker;
               return;
             }else{//没有地标
-                ui.showToast({ title: "没有清扫车数据", icon: 'none' ,duration:2000})
+              that.longitude = "";
+              that.latitude = "";
+              that.markers = [];            
+              ui.showToast({ title: "没有清扫车数据", icon: 'none' ,duration:2000})
             }
 					}
 				},
@@ -720,15 +768,15 @@ export default {
 .header{
 	display: flex;
 	justify-content: space-between;
-	top: 20px;
+	top: 30px;
 	height: 7vh;
 	background-color: white;
 	align-items: center;
 	z-index: 10;
 	position: absolute;
-  width:90vw;
-  margin: 0 5vw;
-  border-radius: 10px;
+  width:95vw;
+  margin: 0 2.5vw;
+  border-radius: 5px;
   box-shadow: 1px 2px 8px rgba(0, 0, 0, 0.4);
 }
 #ui-app{
@@ -736,7 +784,7 @@ export default {
   position: relative;
 }
 .charts{
-	height: 20vh;
+	height: 24vh;
 	background-color: white;
 	width: 100%;
 	position: absolute;
@@ -764,14 +812,70 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: white;
   .detailList{
     height: 80%;
     overflow: auto;
+    font-size: 12px;
+    background-color: white;
+    .sweepButton{
+      background-color: #FF8400;
+      border-radius: 20px;
+      color: white;
+      height: 30px;
+      line-height: 30px;
+      font-size: 12px;
+      border: none;
+      width: 90px;
+      margin-bottom: 10px;
+      flex-direction: row-reverse!important;
+    }
+    .title{
+      color: #333333;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 50px;
+    }
+    .ui-col-content{
+      flex-direction: row!important;
+    }
+    .txtLeft{
+      .mix-text-overflow();
+      .textLeft{
+        display: inline-block;
+        width: 70%;
+        .mix-text-overflow();
+      }
+      .textRight{
+        display: inline-block;
+        width: 30%;
+        text-align: left;
+        text-indent: 5px;
+        .mix-text-overflow();
+      }
+    }
+    .txtRight{
+      .mix-text-overflow();
+      .textLeft{
+        display: inline-block;
+        width: 70%;
+        .mix-text-overflow();
+      }
+      .textRight{
+        display: inline-block;
+        width: 30%;
+        text-align: left;
+        text-indent: 5px;
+        .mix-text-overflow();
+      }
+    }
   }
   .cha{
     height: 20%;
     text-align: center;
+    .ui-image-container{
+      display: inline-block;
+      margin-top: 8px;
+    }
     .ui-image{
       width: 25px!important;
       height: 25px;
@@ -795,7 +899,7 @@ export default {
     height: auto;
     width: 80vw;
     background-color: white;
-    border-radius: 10px;
+    border-radius: 5px;
     position: relative;
   }
 }
@@ -843,8 +947,42 @@ export default {
   }
 }
 .myBtn{
-  background-color: #FF6600;
-  width: 90vw;
+  background-color: #FF7E28;
+  border:1px solid #FF7E28;
+  color: white;
+  display: block;
+  width: 75%!important;
+  margin: 20px auto;
+}
+.formItemTit{
+  font-size: 12px;
+}
+.formItemTit1{
+  font-size: 16px!important;
+}
+.btnGroup{
+  margin: 3vh 0;
+  .confirm{
+    background-color: white;
+    border:1px solid #FF7E28;
+    color: #FF7E28;
+  }
+  .cancel{
+    background-color: #FF7E28;
+    border:1px solid #FF7E28;
+    color: white;
+  }
+}
+.sweep{
+
+}
+.saoma{
+    height: auto;
+    width: 22px;
+  img{
+    width: 100%!important;
+    height: 100%;
+  }
 }
 </style>
   
