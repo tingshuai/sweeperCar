@@ -355,7 +355,7 @@ export default {
               that.getChartData({//请求异常图.
                 type:"normal"
               })
-              that.getChartData({//请求电压图
+              that.getChartData({//请求电压图s
                 type:"voltage"
               })
               that.getSlideData();//获取下拉数据.....
@@ -983,6 +983,9 @@ export default {
     width: 100%!important;
     height: 100%;
   }
+}
+#map{
+  
 }
 </style>
   

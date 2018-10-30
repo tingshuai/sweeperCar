@@ -19,10 +19,10 @@
                 <ui-button form-type="submit" type="primary" class="myBtn">登录</ui-button>
             </ui-view>
         </ui-form>
+        <ui-view class="bottomImg txt">
+          <ui-image class="txt" mode="aspectFit" src="./static/img/font@2x.png"></ui-image>
+        </ui-view>
       </ui-view>
-      <ui-view class="bottomImg txt">
-        <ui-image class="txt" mode="aspectFit" src="./static/img/font@2x.png"></ui-image>
-      </ui-view>      
     </ui-page>
 </template>
 
@@ -32,13 +32,14 @@ export default {
   config: {
     navigationStyle: 'custom',
     navigationBarTextStyle: 'white',
-    backgroundColor: '#061939'
+    backgroundColor: '#061939',
+    disableScroll:true
   },
   data () {
     return {
       providerList: [],
-      account: '18558241440',
-      password: '123456',
+      account: '',
+      password: '',
       positionTop: 0,
     }
   },
@@ -112,11 +113,13 @@ export default {
 }
 .txt{
   text-align: center;
+
 }
 .txt1{
   font-size: 22px;
   color: #FF7E28;
-  margin: 20vh 0 10px 0;
+  margin-top: 20vh;
+  // margin: 20vh 0 10px 0;
 }
 .txt2{
   color:rgba(113,113,113,1);
@@ -133,6 +136,7 @@ export default {
 }
 .form{
   width: 60vw;
+  height: 40vh;
   display: block;
   margin: 0 auto;
 }
@@ -140,7 +144,6 @@ export default {
   display: block;
 }
 .input-group{
-  margin: 30px 0 10px 0;
   .ui-input{
     border: 1px solid #A0A0A0;
     border-radius: 2px;
@@ -151,23 +154,27 @@ export default {
 }
 .myPage{
   padding-top: 0!important;
+  overflow: hidden;
 }
 .myBtn{
   background-color: #FF7E28!important;
   border: none!important;
   border-radius: 2px;
 }
+.logo{
+    padding: 40px 0 0 0;
+    height: 40vh;
+}
 .logoImg{
-    height: 30px;;
-    margin: 40px 0 0 0;
+    width: 12vw;
+    display: inline-block!important;
 }
 .bottomImg{
-    position: fixed;
-    bottom: 20px;
-    height: 10vh;
-    img{
-      transform: scale(2.3)
-    }
+    height: 20vh;
+      img{
+        width: 100vw!important;
+        transform: scale(2)
+      }
 }
 .content{
     overflow: hidden;

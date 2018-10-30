@@ -20,6 +20,7 @@ ui.extend({
         // prompt("成功----",JSON.stringify(res))
         ui.hideLoading()
         if( res.data.code == 203 ){//token失效....
+          debugger;
           ui.navigateTo({
             url:`/pages/login`
           })
