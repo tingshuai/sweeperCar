@@ -1,6 +1,6 @@
 {
-    "touchui.deving": true,
-    "touchui.builded": true,
+    "touchui.deving": false,
+    "touchui.builded": false,
     "touchui.enable": true,
     "files.associations": {
         "*.ui": "vue"

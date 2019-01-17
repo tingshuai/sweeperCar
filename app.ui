@@ -16,7 +16,7 @@ export default {
       "showScroller":true
     },
     "tabBar": false,
-    "networkBaseUrl":"http://192.168.1.80:8004/"
+    "networkBaseUrl":"http://218.0.50.68:8004/"//http://192.168.1.80:8004/    218.0.50.68
   },
   data () {
     return {
@@ -330,16 +330,16 @@ body {
 .qf_control{
   position: fixed!important;
   z-index: 20;
-  top: 80px;
-  left:5vw;
+  top: 13vh;
+  left:3vw;
   width: 40px;
-  height: 40px;  
+  height: 40px;
 }
 .qf_plus{
   position: fixed!important;
   z-index: 20;
-  top:80px;
-  right: 5vw;
+  top:13vh;
+  right: 3vw;
   width: 40px;
   height: 40px;
 }
@@ -363,5 +363,22 @@ body {
     font-size: 12px;
     // border-bottom: 1px solid rgba(0,0,0,0.1);
   }
+}
+#map{
+  >div{
+    >div:nth-child(2){
+      display: none;
+    }
+    >div:nth-child(3){
+      display: none;
+    }
+    >div:nth-child(4){
+      display: none;
+    }
+  }
+}
+.myPage{
+  padding-top: 0!important;
+  overflow: hidden;
 }
 </style>

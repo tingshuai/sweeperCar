@@ -1,13 +1,14 @@
 <template>
-  <ui-page class="map-wrap" top="0" page-load="{{ pageLoad }}">
-    <ui-view class="{{getViewClasses}}" top="0" left="0" bottom="0">
+  <ui-page class="map-wrap myPage" top="0" page-load="{{ pageLoad }}">
+    <ui-view class="{{getViewClasses}} leftPart" top="0" left="0" bottom="0">
       <ui-view style="font-size:22px;font-weight:bold;margin: 20px 15px;">筛选</ui-view>
       <ui-view class="formItem formItem2">
           <ui-input placeholder="区域--" show-clear="{{ false }}" ui:model="{{ viData.areaName }}"></ui-input>
+          <ui-view class="inputMask" bindtap="showList" data-target="showArea"></ui-view>
           <ui-text class="angle" bindtap="showList" data-target="showArea">▼</ui-text>
           <ui-view class="qf_slide" ui:show="{{ viData.showArea }}">
-              <ui-view class="slideItem" data-item="{{JSON.stringify({areaNo:'',areaName:'全部'}) }}" bindtap="selArea">全部</ui-view>
-              <ui-view class="slideItem" ui:for="{{ slideData }}" data-item="{{JSON.stringify(item) }}" bindtap="selArea">{{ item.areaName }}</ui-view>
+              <ui-view class="slideItem" data-item="{{JSON.stringify({areaNo:'',areaName:'全部'}) }}" bindtap="selArea($event,'sel')">全部</ui-view>
+              <ui-view class="slideItem" ui:for="{{ slideData }}" data-item="{{JSON.stringify(item) }}" bindtap="selArea($event,'sel')">{{ item.areaName }}</ui-view>
           </ui-view>
       </ui-view>
       <ui-view class="formTextBtn">
@@ -28,6 +29,7 @@
       <ui-view class="formItem formItem2">
           <ui-input placeholder="未清扫天数" show-clear="{{ false }}" ui:model="{{ viData.selDay }}"></ui-input>
           <ui-text class="angle" bindtap="showList" data-target="showDayList">▼</ui-text>
+          <ui-view class="inputMask" bindtap="showList" data-target="showDayList"></ui-view>
           <ui-view class="qf_slide" ui:show="{{ viData.showDayList }}">
               <ui-view class="slideItem" ui:for="{{ days }}" data-item="{{ JSON.stringify( item ) }}" bindtap="selDay">{{ item.name }}</ui-view>
           </ui-view>
@@ -117,60 +119,63 @@
           <ui-view class="sweepCatDetail" ui:show="{{ isPoint }}">
             <ui-view class="detailList">
               <ui-row height="50" style="border-bottom:1px solid rgba(230,230,230,1)">
-                <ui-col class="txtLeft title" align="left" span="9" vertical-align="middle"><ui-text>机联网编码:{{ mCatDetail.macNo || '' }}</ui-text></ui-col>
+                <ui-col class="txtLeft title" space-left="20" span="9" style="font-weight:500;"><ui-text>机联网编码:{{ mCatDetail.macNo || '' }}</ui-text></ui-col>
                 <ui-col class="" align="right" span="3" vertical-align="top"><ui-button class="sweepButton" data-onlyone="{{ true }}" bindtap="beginSweep">远程请扫</ui-button></ui-col>
               </ui-row>
               <ui-row height="40">
-                <ui-col class="txtLeft" align="right" vertical-align="middle">
-                  <ui-text class="textLeft">电机电压:</ui-text><ui-text class="textRight">{{ mCatDetail.motorVoltage  || '' }}</ui-text>
+                <ui-col class="txtLeft" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="电机电压" data-value="{{ mCatDetail.motorVoltage }}">
+                  <ui-text class="textLeft">电机电瓶电压(V):</ui-text><ui-text class="textRight">{{ mCatDetail.motorVoltage  || '' }}</ui-text>
                 </ui-col>
-                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                <ui-col class="txtRight" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="续航里程" data-value="{{ mCatDetail.cruisingRadius }}">
                   <ui-text class="textLeft">续航里程:</ui-text><ui-text class="textRight">{{ mCatDetail.cruisingRadius  || '' }}</ui-text>
                 </ui-col>
               </ui-row>
-              <ui-row height="40">
-                <ui-col class="txtLeft" align="right" vertical-align="middle">
-                  <ui-text class="textLeft">上次清扫压降（V）:</ui-text><ui-text class="textRight">{{ mCatDetail.lastCleanVoltageDrop || '' }}</ui-text>
+              <!-- <ui-row height="40">
+                <ui-col class="txtLeft" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="上次清扫压降(V)" data-value="{{ mCatDetail.lastCleanVoltageDrop }}">
+                  <ui-text class="textLeft">上次清扫压降(V):</ui-text><ui-text class="textRight">{{ mCatDetail.lastCleanVoltageDrop || '' }}</ui-text>
                 </ui-col>
-                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                <ui-col class="txtRight" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="电池使用时间" data-value="{{ mCatDetail.batteryUseTime }}">
                   <ui-text class="textLeft">电池使用时间:</ui-text><ui-text class="textRight">{{ mCatDetail.batteryUseTime || '' }}</ui-text>
                 </ui-col>
-              </ui-row>
+              </ui-row> -->
               <ui-row height="40">
-                <ui-col class="txtLeft" align="right" vertical-align="middle">
-                  <ui-text class="textLeft">运行状态:</ui-text><ui-text class="textRight">{{ mCatDetail.runState || '' }}</ui-text>
+                <ui-col class="txtLeft" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="运行状态" data-value="{{ mCatDetail.runState }}">
+                  <ui-text class="textLeft">当前状态:</ui-text><ui-text class="textRight">{{ mCatDetail.runState || '' }}</ui-text>
                 </ui-col>
-                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                <ui-col class="txtRight" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="故障状态" data-value="{{ mCatDetail.errorState }}">
                   <ui-text class="textLeft">故障状态:</ui-text><ui-text class="textRight">{{ mCatDetail.errorState || '' }}</ui-text>
                 </ui-col>
               </ui-row>        
               <ui-row height="40">
-                <ui-col class="txtLeft" align="right" vertical-align="middle">
+                <ui-col class="txtLeft" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="历史清扫次数" data-value="{{ mCatDetail.hisTimes }}">
                   <ui-text class="textLeft">历史清扫次数:</ui-text><ui-text class="textRight">{{ mCatDetail.hisTimes || '' }}</ui-text>
                 </ui-col>
-                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                <ui-col class="txtRight" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="当天清扫次数" data-value="{{ mCatDetail.todayTimes }}">
                   <ui-text class="textLeft">当天清扫次数:</ui-text><ui-text class="textRight">{{ mCatDetail.todayTimes || '' }}</ui-text>
                 </ui-col>
               </ui-row>    
               <ui-row height="40">
-                <ui-col class="txtLeft" align="right" vertical-align="middle">
+                <ui-col class="txtLeft" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="电池状态" data-value="{{ mCatDetail.batteryState }}">
                   <ui-text class="textLeft">电池状态:</ui-text><ui-text class="textRight">{{ mCatDetail.batteryState || '' }}</ui-text>
                 </ui-col>
-                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
-                  <ui-text class="textLeft">主电板电压:</ui-text><ui-text class="textRight">{{ mCatDetail.mainVoltage || '' }}</ui-text>
+                <ui-col class="txtRight" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="主电板电压" data-value="{{ mCatDetail.mainVoltage }}">
+                  <ui-text class="textLeft">主板电压(V):</ui-text><ui-text class="textRight">{{ mCatDetail.mainVoltage || '' }}</ui-text>
                 </ui-col>
               </ui-row>   
-              <ui-row height="40">
-                <ui-col class="txtLeft" align="right" vertical-align="middle">
+              <!-- <ui-row height="40">
+                <ui-col class="txtLeft" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="上次清扫时间" data-value="{{ mCatDetail.lastCleanTime }}">
                   <ui-text class="textLeft">上次清扫时间:</ui-text><ui-text class="textRight">{{ mCatDetail.lastCleanTime || '' }}</ui-text>
                 </ui-col>
-                <ui-col class="txtRight" align="right" space-left="" vertical-align="middle">
+                <ui-col class="txtRight" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="上次清扫平均电流" data-value="{{ mCatDetail.lastCleanCurrent }}">
                   <ui-text class="textLeft">上次清扫平均电流:</ui-text><ui-text class="textRight">{{ mCatDetail.lastCleanCurrent || '' }}</ui-text>
                 </ui-col>
-              </ui-row>       
+              </ui-row>        -->
               <ui-row height="40">
-                <ui-col class="txtLeft" align="right" vertical-align="middle">
+                <!-- <ui-col class="txtLeft" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="上次清扫用时" data-value="{{ mCatDetail.lastUseTime }}">
                   <ui-text class="textLeft">上次清扫用时:</ui-text><ui-text class="textRight">{{ mCatDetail.lastUseTime || '' }}</ui-text>
+                </ui-col> -->
+                <ui-col class="txtRight" align="right" vertical-align="middle" bindtouchstart="viewTit" bindtouchend="hidTit" data-key="电池使用时间" data-value="{{ mCatDetail.batteryUseTime }}">
+                  <ui-text class="textLeft">电池使用时间:</ui-text><ui-text class="textRight">{{ mCatDetail.batteryUseTime || '' }}</ui-text>
                 </ui-col>
                 <ui-col class="txtRight" align="right" space-left="" vertical-align="middle"></ui-col>
               </ui-row>
@@ -184,12 +189,13 @@
     <ui-view class="addCarModel" ui:show="isAddCar">
         <ui-view class="addCar">
            <ui-row height="60">
-             <ui-col align="center" vertical-align="middle"><ui-text class="formItemTit formItemTit1">远程请扫</ui-text></ui-col>
+             <ui-col align="center" vertical-align="middle"><ui-text class="formItemTit formItemTit1">远程清扫</ui-text></ui-col>
            </ui-row>
            <ui-row height="40">
              <ui-col span="3" align="right" vertical-align="middle"><ui-text class="formItemTit">机联网编码</ui-text></ui-col>
              <ui-col class="formItem2" span="7" align="right" space-left="8" vertical-align="middle">
-               <ui-input placeholder="" ui:model="{{ carData.macNo }}"></ui-input>
+                <ui-input placeholder="" ui:model="{{ carData.macNo }}"></ui-input>
+                <ui-view class="inputMask"></ui-view>
              </ui-col>
              <ui-col sapn="2" align="center" vertical-align="middle">
               <ui-image src="./static/img/saosao.png" class="saoma" mode="aspectFit" bindtap="saoma"></ui-image>
@@ -197,15 +203,22 @@
            </ui-row>
            <ui-row height="40">
              <ui-col span="3" align="right" vertical-align="middle"><ui-text class="formItemTit">区域名称</ui-text></ui-col>
-             <ui-col span="7" class="formItem2" align="right" space-left="8" vertical-align="middle">
-               <ui-input placeholder="" ui:model="{{ carData.areaNo }}"></ui-input>
+             <ui-col span="7" class="formItem2 slide2" align="right" space-left="8" vertical-align="middle">
+                <ui-input placeholder="" ui:model="{{ viData.areaName }}" show-clear="{{ false }}"></ui-input>
+                <ui-view class="inputMask" bindtap="showList" data-target="showArea"></ui-view>
+                <ui-text class="angle" bindtap="showList" data-target="showArea">▼</ui-text>
+                <ui-view class="qf_slide" ui:show="{{ viData.showArea }}">
+                    <!-- <ui-view class="slideItem" data-item="{{JSON.stringify({areaNo:'',areaName:'全部'}) }}" bindtap="selArea( $event,'add' )">全部</ui-view> -->
+                    <ui-view class="slideItem" ui:for="{{ slideData }}" data-item="{{JSON.stringify(item) }}" bindtap="selArea( $event,'add' )">{{ item.areaName }}</ui-view>
+                </ui-view>               
              </ui-col>
              <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
            </ui-row>   
            <ui-row height="40">
              <ui-col span="3" align="right" vertical-align="middle"><ui-text class="formItemTit">经纬度</ui-text></ui-col>
              <ui-col span="7" class="formItem2" align="right" space-left="8" vertical-align="middle">
-               <ui-input placeholder="" ui:model="{{ carData.lonAndLat }}"></ui-input>
+                <ui-input placeholder="" ui:model="{{ carData.lonAndLat }}"></ui-input>
+                <ui-view class="inputMask"></ui-view>
              </ui-col>
              <ui-col sapn="2" align="right" vertical-align="middle"></ui-col>
            </ui-row>
@@ -223,6 +236,11 @@
            </ui-row>
         </ui-view>
     </ui-view>
+    <ui-view class="popTit" ui:show="{{ popTit.show }}">
+         <ui-col span="12" space-left="10" align="center" vertical-align="middle">
+           <ui-text class="confirm">{{ popTit.key }} :{{ popTit.value }}</ui-text>
+         </ui-col>
+    </ui-view>
   </ui-page>
 </template>
 
@@ -234,10 +252,16 @@ let app = ui.getApp().globalData;
 export default {
   config: {
     "navigationBarTitleText": "自定义标点和气泡",
-    "touchSlideMenu": true
+    "touchSlideMenu": false,
+    "showSideBar":false
   },
   data () {
     return {
+      popTit:{
+        key:"",
+        value:"",
+        show:false
+      },
       showArea:false,
       latitude: 39.855060,
       longitude: 116.368650,
@@ -257,13 +281,13 @@ export default {
         voltage:false//电压低于十二伏
       },
       viData:{
-        areaName:"全部",
-        selDay:"全部",
+        areaName:"",
+        selDay:"",
         showDayList:false,//未清扫天数
         showArea:false//区域
       },
       mCatDetail:{},
-      days:[{name:"全部",value:"0"},{name:"1天",value:1},{name:"3天",value:3},{name:"5天",value:5}],
+      days:[{name:"全部",value:""},{name:"1天",value:1},{name:"3天",value:3},{name:"5天",value:5}],
       areaData:{
         areaName:"",
         areaNo:""
@@ -387,18 +411,42 @@ export default {
     getViewClasses (n) {
       let classes = ['menu']
       classes.push( this.isExpand ? 'expand' : '' )
+      if( !this.isExpand ){
+        this.viData.showArea = false
+        this.areaData.areaNo = "";
+        this.areaData.areaName = "";
+      }else{
+        this.getSlideData();
+      }
       return classes
     }
   },
   methods: {
+    viewTit(e){
+      let _target = e.currentTarget.dataset;
+      this.popTit.key = _target.key;
+      this.popTit.value = _target.value;
+      this.popTit.show = true;
+    },
+    hidTit(e){
+      this.popTit.show = false;
+    },
     isAddArea(e){
       this.showArea = !this.showArea;
+      if( !this.showArea ){
+        this.areaData.areaNo = "";
+        this.areaData.areaName = "";
+      }
     },
     toggleSlide(e){
       this.isExpand = !this.isExpand;
     },
     toggleAddCar(e){
       this.isAddCar = !this.isAddCar;
+      this.viData.showArea = false;
+      this.carData.lonAndLat = "";
+      this.carData.macNo = "";
+      this.carData.macNo = "";
     },
     showList(e){
       let _target = e.currentTarget.dataset.target;
@@ -414,7 +462,14 @@ export default {
           if(result.confirm){
             app.token = "";
             app.userMsg = "";
-            ui.navigateTo({
+            that.viData.areaName = '全部';
+            that.viData.selDay = '全部';
+            that.areaData.areaNo = '';
+            that.areaData.areaName = '';
+            that.carData.lonAndLat = ''
+            that.searchData.areaNo = '';
+            that.carData.areaNo = '';            
+            ui.redirectTo({
               url:'/pages/login'
             })
             // that.http({
@@ -447,7 +502,9 @@ export default {
           _param.commcodes.push(val.id)
         });
       }else{
-        _param.commcodes = [that.mCatDetail.macNo]
+        that.mCatDetail.forEach((val,i,arr)=>{
+          _param.commcodes.push( val.macNo )
+        })
       }
       this.http({
         url:"cars/sweeper",
@@ -484,47 +541,93 @@ export default {
         this.searchData[val] = true;
       })
       this.getPosition();
+      this.getChartData({//请求异常图.
+        type:"normal"
+      })
+      this.getChartData({//请求电压图s
+        type:"voltage"
+      })      
     },
     addCar(){
       let that = this;
-      this.http({
-        url:"cars/add",
-        method:"POST",
-        contentType:"application/x-www-form-urlencoded",
-        params:that.carData,
-        scb(res){
-          debugger;
-        },
-        fcb(res){
-          
-        }
-      })      
+      let promise = new Promise((resolve,reject)=>{
+        that.checkNo(that.carData.macNo,resolve);
+      })
+      promise.then(()=>{
+        this.http({
+          url:"cars/add",
+          method:"POST",
+          contentType:"application/x-www-form-urlencoded",
+          params:that.carData,
+          scb(res){
+            ui.showToast({ title: "添加成功", icon: 'none' ,duration:2000});
+            that.toggleAddCar();
+          },
+          fcb(res){
+            ui.showToast({ title: "添加失败", icon: 'none' ,duration:2000})
+            that.toggleAddCar();
+          }
+        })      
+      })
     },
     addArea(e){
       let that = this;
-      this.http({
-        url:"areas/add",
-        method:"POST",
-        params:that.areaData,
-        scb(res){
-          debugger;
-        },
-        fcb(res){
-          
+      let promise = new Promise((resolve,reject)=>{
+        if( that.areaData.areaName == '' ||  that.areaData.areaName.split(" ").join("").length === 0 ){
+          ui.showToast({ title: "区域名称不能为空", icon: 'none' ,duration:2000});
+          return;
+        }else if( that.areaData.areaNo == '' || that.areaData.areaNo.split(" ").join("").length === 0  ){
+          ui.showToast({ title: "区域编码不能为空", icon: 'none' ,duration:2000});
+          return;
+        }else{
+          return resolve();
         }
       })
+      promise.then(()=>{
+        this.http({
+          url:"areas/add",
+          method:"POST",
+          contentType:"application/x-www-form-urlencoded",
+          params:that.areaData,
+          scb(res){
+            that.getSlideData();
+            ui.showToast({ title: "添加成功", icon: 'none' ,duration:2000});
+            that.areaData.areaNo = "";
+            that.areaData.areaName = "";
+          },
+          fcb(res){
+            ui.showToast({ title: "添加失败", icon: 'none' ,duration:2000})
+          }
+        })
+      })
     },
-    selArea(e){//选择地区.....
+    selArea(e,data){//选择地区.....
       let target = JSON.parse( e.target.dataset.item );
       this.searchData.areaNo = target.areaNo;
       this.viData.areaName = target.areaName;
-      this.getPosition();
+      this.carData.areaNo = target.areaNo;
+      this.viData.showArea = !this.viData.showArea;
+      if( data == 'sel' ){
+        this.getPosition();
+        this.getChartData({//请求异常图.
+          type:"normal"
+        })
+        this.getChartData({//请求电压图s
+          type:"voltage"
+        })
+      }
     },
     selDay(e){//选择天数....
       let target = JSON.parse( e.target.dataset.item );
       this.searchData.intervalDays = target.value;
       this.viData.selDay = target.name;
       this.getPosition();
+      this.getChartData({//请求异常图.
+        type:"normal"
+      })
+      this.getChartData({//请求电压图s
+        type:"voltage"
+      })         
     },
     togglePoint(){
       this.isPoint = false;
@@ -567,12 +670,27 @@ export default {
         let that = this;
         ui.scanCode({
           success: (res) => {
-            that.carData.macNo = res.result;
+            that.checkNo(res.result);
           },
           fail:(res)=>{
             ui.showToast({ title: '未识别,请重新选择。', icon:"none", duration:1500 });
           }
         })      
+    },
+    checkNo(NO,resolve){
+      let that = this;
+			this.http({
+        url:`cars/checkMacNo?macNo=${NO}`,
+        method:"GET",
+        params:{},
+				scb(res){
+            that.carData.macNo = NO;
+            resolve();
+				},
+				fcb(res){
+					console.log( "errmmm", res)
+				}
+			})
     },
     toSysMap (lat, lng, names) {
       ui.openSysMap({
@@ -595,8 +713,10 @@ export default {
         method:"GET",
         params:this.searchData,
 				scb(res){
+          // prompt("清扫车数据",JSON.stringify( res ))
 					if( res.data.code == 200 ){
             if(res.data.data.length != 0){//如果有地标
+              that.mCatDetail = res.data.data;
               let _marker = [];
               res.data.data.forEach((val,i,arr) => {
                 _marker.push({
@@ -640,7 +760,7 @@ export default {
                             id: 1
                           },{
                             quantity: res.data.data.total - res.data.data.lowVoltage,
-                            name: '正常',
+                            name: '正常电压',
                             id: 2
                           }]
               that.donut.data = _data;
@@ -768,7 +888,7 @@ export default {
 .header{
 	display: flex;
 	justify-content: space-between;
-	top: 30px;
+	top: 5vh;
 	height: 7vh;
 	background-color: white;
 	align-items: center;
@@ -853,6 +973,11 @@ export default {
         .mix-text-overflow();
       }
     }
+    .title{      
+      span{
+        font-weight: bold;
+      }
+    }
     .txtRight{
       .mix-text-overflow();
       .textLeft{
@@ -895,6 +1020,7 @@ export default {
   display: flex;
   justify-content:space-around;
   align-items:center;
+
   .addCar{
     height: auto;
     width: 80vw;
@@ -937,6 +1063,7 @@ export default {
     }
 }
 .formItem2{
+  position: relative;
   .ui-input{
     border-radius: 1px;
     height: 30px;
@@ -984,8 +1111,46 @@ export default {
     height: 100%;
   }
 }
-#map{
-  
+.popTit{
+    position: absolute;
+    top: 40vh;
+    width: 70vw;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    height: 40px;
+    z-index: 100;
+    left: 15vw;
+    border-radius: 6px;
+}
+.slide2{
+  .angle{
+      top: 9px;
+  }
+  .qf_slide{
+      max-height: 100px;
+      overflow: auto;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      text-indent: 14px;
+      position: absolute;
+      z-index: 1000;
+      width: 100%;
+      text-align: left;
+      background-color: white;
+      top: 37px;
+    }
+}
+.inputMask{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0);
+    height: 100%;
+}
+.leftPart{
+    .inputMask{
+    height: 30px!important;
+  }
 }
 </style>
   
